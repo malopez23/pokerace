@@ -1,69 +1,78 @@
 import { useState } from "react";
-
 import { CarSelector } from "./components/CarSelector";
-import { BattleResult } from "./components/ui/BattleResult";
 
 import type { FipeCar } from "./api/fipe";
-import type { PokemonData } from "./api/pokemon";
-import type { BattleResult as BattleResultType } from "./types/battle";
+import type { Racer } from "./types/racer";
+import type { RacerBattleResult } from "./types/racer";
 
-import { getPokemonById } from "./api/pokemon";
-import { getPokemonIdFromCar } from "./utils/pokemonMatcher";
-
-import { getCarStats } from "./utils/carStats";
-import { getPokemonStats } from "./utils/pokemonStats";
-import { resolveBattle } from "./utils/battleResolver";
+import { createRacerFromCar } from "./utils/createRacer";
+import { resolveRacerBattle } from "./utils/resolveRacerBattle";
 
 export default function App() {
-  const [pokemon, setPokemon] = useState<PokemonData | null>(null);
-  const [battle, setBattle] = useState<BattleResultType | null>(null);
 
-  async function handleCarSelected(selectedCar: FipeCar) {
-    console.clear();
-    console.log("🚗 Car selected:", selectedCar);
-
-    // 🔹 Gera Pokémon baseado no carro
-    const pokemonId = getPokemonIdFromCar(
-      selectedCar.Valor,
-      selectedCar.Modelo
-    );
-
-    const pokemonData = await getPokemonById(pokemonId);
-    setPokemon(pokemonData);
-
-    console.log("🐲 Pokémon generated:", pokemonData);
-
-    // 🔹 Calcula stats
-    const carStats = getCarStats(selectedCar);
-    const pokemonStats = getPokemonStats(pokemonData);
-
-    console.log("📊 Car stats:", carStats);
-    console.log("📊 Pokémon stats:", pokemonStats);
-
-    // 🔹 Resolve batalha
-    const result = resolveBattle(carStats, pokemonStats);
-    setBattle(result);
-
-    console.log("🏆 Battle result:", result);
+  function getWinnerLabel(winner: "racerA" | "racerB" | "draw") {
+    if (winner === "draw") return "Draw";
+    if (winner === "racerA") return "Player 1";
+    return "Player 2";
   }
 
-  function handleRestart() {
-    setPokemon(null);
-    setBattle(null);
+  const [playerOne, setPlayerOne] = useState<Racer | null>(null);
+  const [playerTwo, setPlayerTwo] = useState<Racer | null>(null);
+  const [battle, setBattle] = useState<RacerBattleResult | null>(null);
+
+  async function handlePlayerOne(car: FipeCar) {
+    console.clear();
+    console.log("🚗 Player 1 selected:", car);
+
+    const racer = await createRacerFromCar(car);
+    setPlayerOne(racer);
+
+    console.log("🧩 Player 1 racer:", racer);
+  }
+
+  async function handlePlayerTwo(car: FipeCar) {
+    console.log("🚙 Player 2 selected:", car);
+
+    const racer = await createRacerFromCar(car);
+    setPlayerTwo(racer);
+
+    console.log("🧩 Player 2 racer:", racer);
+
+    if (playerOne) {
+      const result = resolveRacerBattle(playerOne, racer);
+      setBattle(result);
+
+      console.log("🏁 Battle result:", result);
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-6">
-      {!pokemon && (
-        <CarSelector onCarSelected={handleCarSelected} />
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6">
+      {!playerOne && (
+        <>
+          <h2 className="text-xl font-bold">Player 1</h2>
+          <CarSelector onCarSelected={handlePlayerOne} />
+        </>
       )}
 
-      {pokemon && battle && (
-        <BattleResult
-          pokemon={pokemon}
-          battle={battle}
-          onRestart={handleRestart}
-        />
+      {playerOne && !playerTwo && (
+        <>
+          <h2 className="text-xl font-bold">Player 2</h2>
+          <CarSelector onCarSelected={handlePlayerTwo} />
+        </>
+      )}
+
+      {battle && (
+        <div className="p-6 rounded-xl bg-gray-800 text-white text-center">
+          <h2 className="text-2xl font-bold mb-2">🏆 PvP Result</h2>
+
+          <p>
+            Winner: <strong className="uppercase">{getWinnerLabel(battle.winner)}</strong>
+          </p>
+
+          <p>🚗 Player 1 score: {battle.racerAScore.toFixed(2)}</p>
+          <p>🚙 Player 2 score: {battle.racerBScore.toFixed(2)}</p>
+        </div>
       )}
     </div>
   );
