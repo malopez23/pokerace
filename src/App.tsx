@@ -1,10 +1,11 @@
 import { useState } from "react";
 
 import { CarSelector } from "./components/CarSelector";
-import { PokemonReveal } from "./components/ui/PokemonReveal";
+import { BattleResult } from "./components/ui/BattleResult";
 
 import type { FipeCar } from "./api/fipe";
 import type { PokemonData } from "./api/pokemon";
+import type { BattleResult as BattleResultType } from "./types/battle";
 
 import { getPokemonById } from "./api/pokemon";
 import { getPokemonIdFromCar } from "./utils/pokemonMatcher";
@@ -15,9 +16,13 @@ import { resolveBattle } from "./utils/battleResolver";
 
 export default function App() {
   const [pokemon, setPokemon] = useState<PokemonData | null>(null);
+  const [battle, setBattle] = useState<BattleResultType | null>(null);
 
   async function handleCarSelected(selectedCar: FipeCar) {
-    // 🔹 Match carro → Pokémon
+    console.clear();
+    console.log("🚗 Car selected:", selectedCar);
+
+    // 🔹 Gera Pokémon baseado no carro
     const pokemonId = getPokemonIdFromCar(
       selectedCar.Valor,
       selectedCar.Modelo
@@ -26,29 +31,38 @@ export default function App() {
     const pokemonData = await getPokemonById(pokemonId);
     setPokemon(pokemonData);
 
-    // 🔥 Engine de batalha (Fase 5)
+    console.log("🐲 Pokémon generated:", pokemonData);
+
+    // 🔹 Calcula stats
     const carStats = getCarStats(selectedCar);
     const pokemonStats = getPokemonStats(pokemonData);
-    const battleResult = resolveBattle(carStats, pokemonStats);
 
-    // Logs apenas para validação (dev)
-    console.log("Car:", selectedCar);
-    console.log("Pokemon:", pokemonData);
-    console.log("Battle result:", battleResult);
+    console.log("📊 Car stats:", carStats);
+    console.log("📊 Pokémon stats:", pokemonStats);
+
+    // 🔹 Resolve batalha
+    const result = resolveBattle(carStats, pokemonStats);
+    setBattle(result);
+
+    console.log("🏆 Battle result:", result);
+  }
+
+  function handleRestart() {
+    setPokemon(null);
+    setBattle(null);
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-6">
       {!pokemon && (
         <CarSelector onCarSelected={handleCarSelected} />
       )}
 
-      {pokemon && (
-        <PokemonReveal
+      {pokemon && battle && (
+        <BattleResult
           pokemon={pokemon}
-          onConfirm={() => {
-            console.log("Pokémon confirmado:", pokemon.name);
-          }}
+          battle={battle}
+          onRestart={handleRestart}
         />
       )}
     </div>

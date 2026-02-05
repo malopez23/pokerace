@@ -1,7 +1,7 @@
 export type BattleResult = {
+  winner: "car" | "pokemon" | "draw";
   carScore: number;
   pokemonScore: number;
-  winner: "car" | "pokemon" | "draw";
   breakdown: {
     speed: {
       car: number;
