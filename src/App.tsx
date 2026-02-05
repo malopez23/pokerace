@@ -1,12 +1,16 @@
+import { TypeBadge } from "./components/ui/TypeBadge";
+
 function App() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-red-500 to-orange-500 flex items-center justify-center">
-      <h1 className="text-6xl font-black text-white hover:scale-110 transition">
-        Tailwind v4 is working 🚀
-      </h1>
+    <div className="min-h-screen bg-gray-900 flex gap-3 items-center justify-center">
+      <TypeBadge type="fire" />
+      <TypeBadge type="water" />
+      <TypeBadge type="electric" />
+      <TypeBadge type="grass" />
+      <TypeBadge type="dragon" />
+      <TypeBadge type="ice" />
     </div>
   );
 }
 
 export default App;
-
