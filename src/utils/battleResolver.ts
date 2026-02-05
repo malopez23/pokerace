@@ -22,9 +22,9 @@ export function resolveBattle(
   if (pokemonScore > carScore) winner = "pokemon";
 
   return {
+    winner,
     carScore,
     pokemonScore,
-    winner,
     breakdown: {
       speed: {
         car: car.speed,
