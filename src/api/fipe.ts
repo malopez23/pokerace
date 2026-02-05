@@ -24,6 +24,14 @@ export type FipeCarDetails = {
   CodigoFipe: string;
 };
 
+export type FipeCar = {
+  Valor: string;
+  Marca: string;
+  Modelo: string;
+  AnoModelo: number;
+};
+
+
 export async function getBrands(): Promise<FipeBrand[]> {
   const res = await fetch(`${BASE_URL}/marcas`);
   return res.json();

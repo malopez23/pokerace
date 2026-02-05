@@ -1,25 +1,49 @@
+import { useState } from "react";
+
 import { CarSelector } from "./components/CarSelector";
-import { getPokemonIdFromCar } from "./utils/pokemonMatcher";
+import { PokemonReveal } from "./components/ui/PokemonReveal";
+
+import type { PokemonData } from "./api/pokemon";
+import type { FipeCar } from "./api/fipe";
+
 import { getPokemonById } from "./api/pokemon";
+import { getPokemonIdFromCar } from "./utils/pokemonMatcher";
 
-function App() {
-  return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-10">
-      <CarSelector
-        onCarSelected={async (car) => {
-          const pokemonId = getPokemonIdFromCar(
-            car.Valor,
-            car.Modelo
-          );
+export default function App() {
+  // const [car, setCar] = useState<FipeCar | null>(null);
+  const [pokemon, setPokemon] = useState<PokemonData | null>(null);
 
-          const pokemon = await getPokemonById(pokemonId);
+  async function handleCarSelected(selectedCar: FipeCar) {
+    // setCar(selectedCar);
 
-          console.log("Car:", car);
-          console.log("Pokemon:", pokemon);
+    // 🔥 Matching carro → Pokémon
+    const pokemonId = getPokemonIdFromCar(
+      selectedCar.Valor,
+      selectedCar.Modelo
+    );
+
+    const pokemonData = await getPokemonById(pokemonId);
+    setPokemon(pokemonData);
+
+    console.log("Car:", selectedCar);
+    console.log("Pokemon:", pokemonData);
+  }
+
+ return (
+  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
+    {!pokemon && (
+      <CarSelector onCarSelected={handleCarSelected} />
+    )}
+
+    {pokemon && (
+      <PokemonReveal
+        pokemon={pokemon}
+        onConfirm={() => {
+          console.log("Pokémon confirmado:", pokemon.name);
         }}
       />
-    </div>
-  );
-}
+    )}
+  </div>
+);
 
-export default App;
+}
