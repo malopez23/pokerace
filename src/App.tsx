@@ -1,12 +1,16 @@
-import { useEffect } from "react";
-import { getBrands } from "./api/fipe";
+import { CarSelector } from "./components/CarSelector";
+import type { FipeCarDetails } from "./api/fipe";
 
 function App() {
-  useEffect(() => {
-    getBrands().then(console.log);
-  }, []);
-
-  return <div className="text-black">FIPE test</div>;
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-10">
+      <CarSelector
+        onCarSelected={(car: FipeCarDetails) =>
+          console.log("Selected car:", car)
+        }
+      />
+    </div>
+  );
 }
 
 export default App;
